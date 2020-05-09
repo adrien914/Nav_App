@@ -1,15 +1,10 @@
 from tkinter import Tk, Button, Canvas, filedialog, Frame
-from PIL import ImageTk as itk
 from utils.Mouse import Mouse
-from tkinter.font import Font
 from utils.Map import Map
-import os
 
 def get_directory(map: Map, canvas: Canvas):
     directory = filedialog.askdirectory()
     map.load_map(directory)
-    # arr = os.listdir(directory)
-    # print(arr)
     print(vars(map))
     print(canvas)
     width = canvas.winfo_width()

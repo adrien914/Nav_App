@@ -1,4 +1,8 @@
 {
   "pm_file": "port_navalo_PM.jpg",
-  "lambda_0": 0
+  "lambda_0": 0,
+  "upper_left_corner": [245, 55],
+  "bottom_right_corner": [1560, 950],
+  "latitude_multiplier": 1,
+  "longitude_multiplier": 1
 }
