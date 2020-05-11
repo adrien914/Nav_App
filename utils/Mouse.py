@@ -1,5 +1,4 @@
-import math
-from tkinter.font import Font
+from tkinter import Tk, Button, Entry, Label
 
 class Mouse():
     """
@@ -21,6 +20,9 @@ class Mouse():
                 map.line_end = None  # set the line end to None because there could already be a drawn line
             elif map.line_base and not map.line_end:  # else if the line base is already selected
                 map.line_end = (event.x, event.y)  # set the line end to the clicked cooordinates
+                Mouse.get_boat_speed(map, canvas)
+                map.show_speed_distance(canvas)
+
 
     @staticmethod
     def mouse_moved(event, map, canvas) -> None:
@@ -41,10 +43,7 @@ class Mouse():
                 if map.last_line_id:  # if there's already a line delete it so we can redraw it
                     canvas.delete(map.last_line_id)
                 map.last_line_id = canvas.create_line(x1, y1, event.x, event.y, width=2, fill="red")  # draw the line
-                line_bounds = canvas.bbox(map.last_line_id)
-                length = math.sqrt(math.pow((line_bounds[2] - line_bounds[0]), 2) + math.pow((line_bounds[3] - line_bounds[1]), 2)) # Pythagore pour la longeur de la ligne
-                length *= map.settings["ratio_pixel_nautical_miles"]  # Conversion de la longeur en pixels en miles nautiques
-                print("line length: {}".format(length))
+
             ################ Calcul de la longitude ################
             x = event.x - map.settings["upper_left_corner"][0]  # We get x value and substract the number of pixels before the map to it to get the position on the map
             longitude = map.get_longitude(x)
@@ -59,3 +58,49 @@ class Mouse():
             if map.longitude_text and map.latitude_text:
                 canvas.delete(map.longitude_text)
                 canvas.delete(map.latitude_text)
+
+    @staticmethod
+    def get_boat_speed(map, canvas):
+        popup = Tk()
+        text = Label(popup, text="Veuillez entrer la vitesse du bateau", font=("Helvetica", 20), foreground="red").pack(
+            side="top")
+        entry = Entry(popup, width=20)
+        entry.pack(side="top")
+        Button(popup, command=lambda: Mouse.get_speed_value(entry, popup, map, canvas), text="Confirmer").pack(side="top")
+        popup.mainloop()
+        Mouse.get_coeff_maree(map, canvas)
+
+    @staticmethod
+    def get_coeff_maree(map, canvas):
+        popup = Tk()
+        text = Label(popup, text="Veuillez entrer le coefficient de marée", font=("Helvetica", 20), foreground="red").pack(
+            side="top")
+        entry = Entry(popup, width=20)
+        entry.pack(side="top")
+        Button(popup, command=lambda: Mouse.get_coeff_maree_value(entry, popup, map, canvas), text="Confirmer").pack(
+            side="top")
+        popup.mainloop()
+
+    @staticmethod
+    def get_speed_value(input, popup, map, canvas):
+        value = input.get()
+        map.vitesse = int(value)
+        canvas.create_text( map.settings["bottom_right_corner"][0] + 110, map.settings["upper_left_corner"][1],
+                            text="speed = {} knots".format(map.vitesse),
+                            fill="red",
+                            font=("Helvetica", "15")
+                            )
+        popup.quit()
+        popup.destroy()
+
+    @staticmethod
+    def get_coeff_maree_value(input, popup, map, canvas):
+        value = input.get()
+        map.coefficient_maree = int(value)
+        canvas.create_text(map.settings["bottom_right_corner"][0] + 120, map.settings["upper_left_corner"][1] + 90,
+                           text="coefficient de marée = {}".format(map.coefficient_maree),
+                           fill="red",
+                           font=("Helvetica", "15")
+                           )
+        popup.quit()
+        popup.destroy()

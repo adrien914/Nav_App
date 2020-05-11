@@ -12,6 +12,10 @@ class Map:
     longitude_text = None
     latitude_text = None
     image_id = None
+    vitesse = None
+    distance = None
+    travel_time = None
+    coefficient_maree = None
 
     def load_map(self, directory: str) -> bool:
         """
@@ -93,3 +97,41 @@ class Map:
                                                fill="green",
                                                font=("Helvetica", "16")
                                                )  # latitude text
+
+    def show_speed_distance(self, canvas):
+        x, y = self.line_base
+        x1, y1 = self.line_end  # coordonnées des extrémités du vecteur
+        canvas.create_rectangle(x, y, x1, y1)
+        distance_pixels = math.sqrt(math.pow((x1 - x), 2) + math.pow((y1 - y), 2))  # pythagore pour avoir la distance en pixels
+
+        distance = distance_pixels * self.settings["ratio_pixel_nautical_miles"]  # Conversion de la longeur en pixels en miles nautiques
+        self.distance = round(distance, 2)
+        canvas.create_text(self.settings["bottom_right_corner"][0] + 120,
+                           self.settings["upper_left_corner"][1] + 30,
+                           text="distance = {} miles".format(self.distance),
+                           fill="red",
+                           font=("Helvetica", "15")
+                           )
+        self.travel_time = round(self.distance / self.vitesse, 2)
+        cote_x = x1 - x
+        cote_y = y1 - y
+        cote_x_split = cote_x / self.travel_time
+        cote_y_split = cote_y / self.travel_time
+        for i in range(1, int(self.travel_time) + 1):
+            canvas.create_oval(x + i * cote_x_split - 5,
+                               y + i * cote_y_split - 5,
+                               x + i * cote_x_split + 5,
+                               y + i * cote_y_split + 5,
+                               fill="red")
+        canvas.create_oval(x + self.travel_time * cote_x_split - 5,
+                           y + self.travel_time * cote_y_split - 5,
+                           x + self.travel_time * cote_x_split + 5,
+                           y + self.travel_time * cote_y_split + 5,
+                           fill="red")
+        print(cote_x_split, cote_y_split)
+        canvas.create_text(self.settings["bottom_right_corner"][0] + 120,
+                           self.settings["upper_left_corner"][1] + 60,
+                           text="travel time = {} hours".format(self.travel_time),
+                           fill="red",
+                           font=("Helvetica", "15")
+                           )
