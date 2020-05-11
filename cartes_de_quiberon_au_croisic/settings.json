@@ -1,8 +1,11 @@
 {
-  "pm_file": "port_navalo_PM.jpg",
-  "lambda_0": 0,
+  "pm_file": "PM_port_navalo.jpg",
   "upper_left_corner": [245, 55],
   "bottom_right_corner": [1560, 950],
-  "latitude_multiplier": 1,
-  "longitude_multiplier": 1
+  "longitude_top_left_corner": 190,
+  "ratio_pixel_minutes": [15, 450],
+  "multiplier": 103132,
+  "ratio_pixel_nautical_miles": 0.02252252252252252,
+  "nombre_pixels_equateur_latitude_de_reference": 97629,
+  "decalage_pixels_latitude": 30
 }

@@ -4,14 +4,23 @@ from utils.Map import Map
 
 def get_directory(map: Map, canvas: Canvas):
     directory = filedialog.askdirectory()
-    map.load_map(directory)
-    print(vars(map))
-    print(canvas)
-    width = canvas.winfo_width()
-    height = canvas.winfo_height()
-    canvas.create_image(width/2, height/2, anchor="center", image=map.image)
+    if directory:
+        map.load_map(directory)
+        width = canvas.winfo_width()
+        height = canvas.winfo_height()
+        if map.image_id:
+            canvas.delete(map.image_id)
+        map.image_id = canvas.create_image(width/2, height/2, anchor="center", image=map.image)
 
-
+def get_file(map: Map, canvas: Canvas):
+    path = filedialog.askopenfile()
+    if path:
+        map.change_map(path.name)
+        width = canvas.winfo_width()
+        height = canvas.winfo_height()
+        if map.image_id:
+            canvas.delete(map.image_id)
+        map.image_id = canvas.create_image(width/2, height/2, anchor="center", image=map.image)
 
 ################## Main
 window = Tk()
@@ -21,8 +30,8 @@ map = Map()
 ############ Buttons frame ##############
 button_frame = Frame(window)
 button_frame.pack(side="top")
-directory_button = Button(button_frame, command=lambda: get_directory(map, canvas), text="chose map").pack(side="left")
-show_directory_button = Button(button_frame, command=lambda: print(map.directory), text="show directory").pack(side="left")
+directory_button = Button(button_frame, command=lambda: get_directory(map, canvas), text="Choisir zone de navigation").pack(side="left")
+file_button = Button(button_frame, command=lambda: get_file(map, canvas), text="Changer de carte").pack(side="left")
 exit_button = Button(button_frame, command=lambda: exit(), text="Exit").pack(side="left")
 #########################################
 
