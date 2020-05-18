@@ -16,6 +16,11 @@ class Map:
     distance = None
     travel_time = None
     coefficient_maree = None
+    history_buttons = []
+    etape = "tracé"
+    path_delimitation = []
+    courants = []
+    segments_done = 0
 
     def load_map(self, directory: str) -> bool:
         """
@@ -39,6 +44,17 @@ class Map:
         except Exception as e:
             print(e)
             return False
+
+    def change_map(self, path):
+        image = Image.open(path)
+        old_width = 3087
+        old_height = 2147
+        ratio = 2147 / 3087
+        width = 2750
+        image = image.resize((width, int(width * ratio)), Image.ANTIALIAS)
+        self.image = ImageTk.PhotoImage(image=image)
+        self.image = self.image._PhotoImage__photo.subsample(2)
+        return True
 
     def is_within_bounds(self, x: int, y: int) -> bool:
         """
@@ -75,16 +91,7 @@ class Map:
         latitude = str(int(latitude)) + "." + str(minutes_latitude)
         return latitude
 
-    def change_map(self, path):
-        image = Image.open(path)
-        old_width = 3087
-        old_height = 2147
-        ratio = 2147 / 3087
-        width = 2750
-        image = image.resize((width, int(width * ratio)), Image.ANTIALIAS)
-        self.image = ImageTk.PhotoImage(image=image)
-        self.image = self.image._PhotoImage__photo.subsample(2)
-        return True
+
 
     def write_coordinates(self, canvas, event, longitude, latitude):
         self.longitude_text = canvas.create_text(event.x + 10, event.y + 25,
@@ -118,16 +125,16 @@ class Map:
         cote_x_split = cote_x / self.travel_time
         cote_y_split = cote_y / self.travel_time
         for i in range(1, int(self.travel_time) + 1):
-            canvas.create_oval(x + i * cote_x_split - 5,
+            self.path_delimitation.append(canvas.create_oval(x + i * cote_x_split - 5,
                                y + i * cote_y_split - 5,
                                x + i * cote_x_split + 5,
                                y + i * cote_y_split + 5,
-                               fill="red")
-        canvas.create_oval(x + self.travel_time * cote_x_split - 5,
+                               fill="red"))
+        self.path_delimitation.append(canvas.create_oval(x + self.travel_time * cote_x_split - 5,
                            y + self.travel_time * cote_y_split - 5,
                            x + self.travel_time * cote_x_split + 5,
                            y + self.travel_time * cote_y_split + 5,
-                           fill="red")
+                           fill="red"))
         print(cote_x_split, cote_y_split)
         canvas.create_text(self.settings["bottom_right_corner"][0] + 120,
                            self.settings["upper_left_corner"][1] + 60,
@@ -135,3 +142,8 @@ class Map:
                            fill="red",
                            font=("Helvetica", "15")
                            )
+
+    def calculer_courant_final(self):
+        courant_final = {}
+        for courant in self.courants:
+            print()

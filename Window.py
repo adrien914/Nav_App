@@ -1,35 +1,37 @@
-from tkinter import Tk, Button, Canvas, filedialog, Frame
+import json
+from tkinter import Tk, Button, Canvas, Label, Frame, Entry
 from utils.Mouse import Mouse
 from utils.Map import Map
-import glob
+from utils.DirectoryManager import DirectoryManager
 
-def get_directory(map: Map, canvas: Canvas, window):
-    directory = filedialog.askdirectory()
-    if directory:
-        map.load_map(directory)
-        width = canvas.winfo_width()
-        height = canvas.winfo_height()
-        if map.image_id:
-            canvas.delete(map.image_id)
-        map.image_id = canvas.create_image(width/2, height/2, anchor="center", image=map.image)
-        files = glob.glob(directory + "/*.jpg")
-        for avant_pm in range(1, 7):
-            button = Button(window, text=str(7 - avant_pm) + "h avant pleine mer", command=lambda avant_pm=avant_pm: change_map(map, canvas, files[len(files) - 2 - (2 * (avant_pm - 1))]), anchor="w")
-            canvas.create_window(40, 250 + 30 * avant_pm, anchor="nw", window=button)
-        button = Button(window, text="pleine mer",command=lambda: change_map(map, canvas, files[-1]), anchor="w")
-        canvas.create_window(60, 250 + 30 * 7, anchor="nw", window=button)
-        for apres_pm in range(1, 7):
-            button = Button(window, text=str(apres_pm) + "h après pleine mer", command=lambda apres_pm=apres_pm: change_map(map, canvas, files[2 * (apres_pm - 1)]), anchor="w")
-            canvas.create_window(40, 250 + 30 * (apres_pm + 7), anchor="nw", window=button)
+def change_name_popup(path):
+    popup = Tk()
+    text = Label(popup, text="Entrez le nouveau nom", font=("Helvetica", 20), foreground="red").pack(
+        side="top")
+    entry = Entry(popup, width=20)
+    entry.pack(side="top")
+    Button(popup, command=lambda: change_name(entry, popup, path), text="Confirmer").pack(side="top")
+    popup.mainloop()
+    Mouse.get_coeff_maree(map, canvas)
 
-def change_map(map: Map, canvas: Canvas, path: str):
-    if path:
-        map.change_map(path)
-        width = canvas.winfo_width()
-        height = canvas.winfo_height()
-        if map.image_id:
-            canvas.delete(map.image_id)
-        map.image_id = canvas.create_image(width / 2, height / 2, anchor="center", image=map.image)
+def change_name(input, popup, path):
+    value = input.get()
+    found = False
+    i = 0
+    history = []
+    with open("map_history.json", 'w+') as file:
+        history = json.load(file)
+        for entry in history:
+            if entry["path"] == path:
+                found = True
+                break
+            i += 1
+        if found:
+            history[i]["name"] = value
+            file.write(json.dumps(history))
+
+    popup.quit()
+    popup.destroy()
 
 ################## Main #####################
 window = Tk()
@@ -39,7 +41,7 @@ map = Map()
 ############ Buttons frame ##############
 button_frame = Frame(window)
 button_frame.pack(side="top")
-directory_button = Button(button_frame, command=lambda: get_directory(map, canvas, window), text="Choisir zone de navigation").pack(side="left")
+directory_button = Button(button_frame, command=lambda: DirectoryManager.get_directory(map, canvas, window), text="Choisir zone de navigation").pack(side="left")
 exit_button = Button(button_frame, command=lambda: exit(), text="Exit").pack(side="left")
 
 #########################################
@@ -50,6 +52,22 @@ canvas.pack(side="bottom")
 canvas.bind("<Button-1>", lambda event: Mouse.click(event, map, canvas))
 canvas.bind("<Motion>",  lambda event: Mouse.mouse_moved(event, map, canvas))
 #########################################
+
+with open("map_history.json", 'r') as file:
+    try:
+        history = json.load(file)
+    except Exception:
+        history = []
+        pass
+    i = 0
+    for entry in history:
+        i += 1
+        button = Button(window, command=lambda entry=entry: DirectoryManager.get_directory(map, canvas, window, entry["path"]), text=entry["name"])
+        edit_history_name_button = Button(window, command=lambda entry=entry: change_name_popup(entry["path"]), text="editer")
+        history_window = canvas.create_window(900, 250 + 30 * i, anchor="center", window=button)
+        edit_window = canvas.create_window(1050, 250 + 30 * i, anchor="center", window=edit_history_name_button)
+        map.history_buttons.append(history_window)
+        map.history_buttons.append(edit_window)
 
 window.mainloop()
 
