@@ -43,7 +43,7 @@ print(width)
 print(height)
 canvas = Canvas(window, width=width, height=height, bg="black")
 canvas.pack(side="bottom")
-canvas.bind("<Button-1>", lambda event: Mouse.click(event, map, canvas))
+canvas.bind("<Button-1>", lambda event: Mouse.click(event, map, canvas, window))
 canvas.bind("<Motion>",  lambda event: Mouse.mouse_moved(event, map, canvas))
 #########################################
 

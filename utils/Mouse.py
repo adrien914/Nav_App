@@ -8,7 +8,7 @@ class Mouse():
         this class contains the different methods related to mouse actions
     """
     @staticmethod
-    def click(event, map, canvas) -> None:
+    def click(event, map, canvas, window) -> None:
         """
         This method plays when the user left clicks on the map with his mouse
         it's used to select the lines coordinates
@@ -27,7 +27,7 @@ class Mouse():
                     Popup.get_boat_speed(map, canvas)
                     map.show_speed_distance(canvas)
         else:
-            Mouse.get_courant(event, map, canvas)
+            Mouse.get_courant(event, map, canvas, window)
 
     @staticmethod
     def mouse_moved(event, map, canvas) -> None:
@@ -74,7 +74,7 @@ class Mouse():
                     pass
 
     @staticmethod
-    def get_courant(event, map: Map, canvas: Canvas):
+    def get_courant(event, map: Map, canvas: Canvas, window):
         """
         Cette fonction permet de tracer un courant et fait les calculs nécessaires tout en changeant d'heure de navigation si besoin
         """
@@ -104,7 +104,7 @@ class Mouse():
                         map.current_button = map.boutons_heures[map.current_button_index + 1]
                         map.current_button_index += 1  # On incrémente l'index du bouton actuel de 1
                         DirectoryManager.change_map(map, canvas, map.maps_paths[map.current_button_index],
-                                                    map.current_button_index)  # On met la carte correspondant à l'heure suivante
+                                                    map.current_button_index, window)  # On met la carte correspondant à l'heure suivante
                         ###############################################################
 
 
