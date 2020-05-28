@@ -75,31 +75,28 @@ class Map:
             open("map_history.json", 'r+')
         except FileNotFoundError:
             open("map_history.json", "w+")
-        try:
-            with open("map_history.json", 'r+') as file:
-                try:
-                    history = json.load(file)
-                except Exception:
-                    history = []
-                    pass
-                i = 0
-                for entry in history:
-                    i += 1
-                    button = Button(window, command=lambda entry=entry: DirectoryManager.get_directory(map, canvas, window,
-                                                                                                       entry["path"]),
-                                    text=entry["name"])
-                    button.focus_set()
-                    edit_history_name_button = Button(window,
-                                                      command=lambda entry=entry: Popup.change_name_popup(entry["path"], self, canvas, window),
-                                                      text="editer")
-                    history_window = canvas.create_window(900, 250 + 30 * i, anchor="center", window=button)
-                    button_bounds = canvas.bbox(history_window)
-                    edit_window = canvas.create_window(button_bounds[2], button_bounds[3], anchor="sw",
-                                                       window=edit_history_name_button)
-                    self.history_buttons.append(history_window)
-                    self.history_buttons.append(edit_window)
-        except:
-            return
+        with open("map_history.json", 'r+') as file:
+            try:
+                history = json.load(file)
+            except Exception:
+                history = []
+                pass
+            i = 0
+            for entry in history:
+                i += 1
+                button = Button(window, command=lambda entry=entry: DirectoryManager.get_directory(self, canvas, window,
+                                                                                                   entry["path"]),
+                                text=entry["name"])
+                button.focus_set()
+                edit_history_name_button = Button(window,
+                                                  command=lambda entry=entry: Popup.change_name_popup(entry["path"], self, canvas, window),
+                                                  text="editer")
+                history_window = canvas.create_window(900, 250 + 30 * i, anchor="center", window=button)
+                button_bounds = canvas.bbox(history_window)
+                edit_window = canvas.create_window(button_bounds[2], button_bounds[3], anchor="sw",
+                                                   window=edit_history_name_button)
+                self.history_buttons.append(history_window)
+                self.history_buttons.append(edit_window)
 
     def is_within_bounds(self, x: int, y: int) -> bool:
         """
