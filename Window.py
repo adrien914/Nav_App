@@ -37,11 +37,11 @@ exit_button = Button(button_frame, command=lambda: sys.exit(0), text="Exit").pac
 #########################################
 
 ############ Canvas creation ############
-width = window.winfo_screenwidth() * (90 / 100)
-height = window.winfo_screenheight() * (100 / 100)
+width = window.winfo_screenwidth()
+height = window.winfo_screenheight()
 print(width)
 print(height)
-canvas = Canvas(window, width=width, height=height, bg="black")
+canvas = Canvas(window, width=width, height=height, bg="gray")
 canvas.pack(side="bottom")
 canvas.bind("<Button-1>", lambda event: Mouse.click(event, map, canvas, window))
 canvas.bind("<Motion>",  lambda event: Mouse.mouse_moved(event, map, canvas))

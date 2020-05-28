@@ -42,8 +42,8 @@ class DirectoryManager():
             map.image_id = canvas.create_image(width/2, height/2, anchor="center", image=map.image)
             print(canvas.bbox(map.image_id))
             bbox = canvas.bbox(map.image_id)
-            map.settings["upper_left_corner"] = [bbox[0] + 30, bbox[1] + 30]
-            map.settings["bottom_right_corner"] = [bbox[2], bbox[3]]
+            map.settings["upper_left_corner"] = [bbox[0] + map.settings["decalage_x"], bbox[1] + map.settings["decalage_y"]]
+            map.settings["bottom_right_corner"] = [bbox[2] - map.settings["decalage_x_bottom"], bbox[3] - map.settings["decalage_y_bottom"]]
             files = glob.glob(directory + "/*.jpg")
             for avant_pm in range(1, 7):
                 button = Button(window, text=str(7 - avant_pm) + "h avant pleine mer",
