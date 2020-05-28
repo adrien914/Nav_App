@@ -8,7 +8,11 @@ class DirectoryManager():
 
     @staticmethod
     def write_history(directory):
-        with open("map_history.json", 'w+') as file:
+        try:
+            open("map_history.json", 'r+')
+        except FileNotFoundError:
+            open("map_history.json", "w+")
+        with open("map_history.json", 'r+') as file:
             try:
                 history = json.load(file)
             except Exception:
@@ -27,6 +31,8 @@ class DirectoryManager():
         if not directory:
             directory = filedialog.askdirectory()
         if directory:
+            if map.image_id:
+                map.reset()
             DirectoryManager.write_history(directory)
             map.load_map(directory)
             width = canvas.winfo_width()
@@ -37,18 +43,25 @@ class DirectoryManager():
             files = glob.glob(directory + "/*.jpg")
             for avant_pm in range(1, 7):
                 button = Button(window, text=str(7 - avant_pm) + "h avant pleine mer",
-                                command=lambda avant_pm=avant_pm: DirectoryManager.change_map(map, canvas, files[len(files) - 2 - (2 * (avant_pm - 1))]), anchor="w")
+                                command=lambda avant_pm=avant_pm: DirectoryManager.change_map(map, canvas, files[len(files) - 2 - (2 * (avant_pm - 1))], avant_pm - 1), anchor="w")
+                map.maps_paths.append(files[len(files) - 2 - (2 * (avant_pm - 1))])
+                map.boutons_heures.append(button)
                 canvas.create_window(40, 250 + 30 * avant_pm, anchor="nw", window=button)
-            button = Button(window, text="pleine mer", command=lambda: DirectoryManager.change_map(map, canvas, files[-1]), anchor="w")
+            button = Button(window, text="pleine mer", command=lambda: DirectoryManager.change_map(map, canvas, files[-1], 6), anchor="w")
+            map.maps_paths.append(files[-1])
+            map.boutons_heures.append(button)
             canvas.create_window(60, 250 + 30 * 7, anchor="nw", window=button)
             for apres_pm in range(1, 7):
-                button = Button(window, text=str(apres_pm) + "h après pleine mer", command=lambda apres_pm=apres_pm: DirectoryManager.change_map(map, canvas, files[2 * (apres_pm - 1)]), anchor="w")
+                button = Button(window, text=str(apres_pm) + "h après pleine mer", command=lambda apres_pm=apres_pm: DirectoryManager.change_map(map, canvas, files[2 * (apres_pm - 1)], 6 + apres_pm), anchor="w")
+                map.maps_paths.append(files[2 * (apres_pm - 1)])
+                map.boutons_heures.append(button)
                 canvas.create_window(40, 250 + 30 * (apres_pm + 7), anchor="nw", window=button)
+            print(map.maps_paths)
             for history_window in map.history_buttons:
                 canvas.delete(history_window)
 
     @staticmethod
-    def change_map(map: Map, canvas: Canvas, path: str):
+    def change_map(map: Map, canvas: Canvas, path: str, button_index: int):
         if path:
             map.change_map(path)
             width = canvas.winfo_width()
@@ -56,6 +69,15 @@ class DirectoryManager():
             if map.image_id:
                 canvas.delete(map.image_id)
             map.image_id = canvas.create_image(width / 2, height / 2, anchor="center", image=map.image)
-            canvas.tag_raise(map.last_line_id)
+            if map.last_line_id:
+                canvas.tag_raise(map.last_line_id)
             for oval in map.path_delimitation:
                 canvas.tag_raise(oval)
+            if map.current_button:
+                map.current_button.configure(bg="white")
+            map.boutons_heures[button_index].configure(bg="gray")
+            print(map.boutons_heures[button_index])
+            map.current_button = map.boutons_heures[button_index]
+            map.current_button_index = button_index
+            for foreground_item in map.foreground_items:
+                canvas.tag_raise(foreground_item)

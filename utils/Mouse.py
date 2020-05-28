@@ -1,5 +1,7 @@
-from tkinter import Tk, Button, Entry, Label
+from tkinter import Tk, Button, Entry, Label, Canvas
 from utils.Map import Map
+from utils.Popup import Popup
+from utils.DirectoryManager import DirectoryManager
 
 class Mouse():
     """
@@ -22,7 +24,7 @@ class Mouse():
                     map.line_end = None  # set the line end to None because there could already be a drawn line
                 elif map.line_base and not map.line_end:  # else if the line base is already selected
                     map.line_end = (event.x, event.y)  # set the line end to the clicked cooordinates
-                    Mouse.get_boat_speed(map, canvas)
+                    Popup.get_boat_speed(map, canvas)
                     map.show_speed_distance(canvas)
         else:
             Mouse.get_courant(event, map, canvas)
@@ -46,16 +48,14 @@ class Mouse():
                     x1, y1 = map.line_base  # assign the position of the beggining of the line to x1 and y1
                     if map.last_line_id:  # if there's already a line delete it so we can redraw it
                         canvas.delete(map.last_line_id)
-                    map.last_line_id = canvas.create_line(x1, y1, event.x, event.y, width=2, fill="red")  # draw the line
+                    map.last_line_id = canvas.create_line(x1, y1, event.x, event.y, width=2, fill="red", arrow="last", arrowshape=(8, 10, 7))  # draw the line
 
                 ################ Calcul de la longitude ################
-                x = event.x - map.settings["upper_left_corner"][0]  # We get x value and substract the number of pixels before the map to it to get the position on the map
-                longitude = map.get_longitude(x)
+                longitude = map.get_longitude(event.x)
                 ########################################################
 
                 ################ Calcul de la latitude #################
-                y = abs(event.y - map.settings["upper_left_corner"][1])
-                latitude = map.get_latitude(y)
+                latitude = map.get_latitude(event.y)
                 ########################################################
                 map.write_coordinates(canvas, event, longitude, latitude)
             elif map.image and not map.is_within_bounds(event.x, event.y):
@@ -69,103 +69,42 @@ class Mouse():
                         x1, y1 = map.courants[-1]["line_base"]  # assign the position of the beggining of the line to x1 and y1
                         if map.courants[-1]["line_id"]:  # if there's already a line delete it so we can redraw it
                             canvas.delete(map.courants[-1]["line_id"])
-                        map.courants[-1]["line_id"] = canvas.create_line(x1, y1, event.x, event.y, width=2, fill="red")  # draw the line
+                        map.courants[-1]["line_id"] = canvas.create_line(x1, y1, event.x, event.y, width=2, fill="red", arrow="last", arrowshape=(8, 10, 7))  # draw the line
                 except:
                     pass
 
     @staticmethod
-    def get_boat_speed(map, canvas):
-        popup = Tk()
-        text = Label(popup, text="Veuillez entrer la vitesse du bateau", font=("Helvetica", 20), foreground="red").pack(
-            side="top")
-        entry = Entry(popup, width=20)
-        entry.pack(side="top")
-        Button(popup, command=lambda: Mouse.get_speed_value(entry, popup, map, canvas), text="Confirmer").pack(side="top")
-        popup.mainloop()
-        Mouse.get_coeff_maree(map, canvas)
-
-    @staticmethod
-    def get_coeff_maree(map, canvas):
-        popup = Tk()
-        text = Label(popup, text="Veuillez entrer le coefficient de marée", font=("Helvetica", 20), foreground="red").pack(
-            side="top")
-        entry = Entry(popup, width=20)
-        entry.pack(side="top")
-        Button(popup, command=lambda: Mouse.get_coeff_maree_value(entry, popup, map, canvas), text="Confirmer").pack(
-            side="top")
-        popup.mainloop()
-
-    @staticmethod
-    def get_speed_value(input, popup, map, canvas):
-        value = input.get()
-        map.vitesse = int(value)
-        canvas.create_text( map.settings["bottom_right_corner"][0] + 110, map.settings["upper_left_corner"][1],
-                            text="speed = {} knots".format(map.vitesse),
-                            fill="red",
-                            font=("Helvetica", "15")
-                            )
-        popup.quit()
-        popup.destroy()
-
-    @staticmethod
-    def get_coeff_maree_value(input, popup, map, canvas):
-        value = input.get()
-        map.coefficient_maree = int(value)
-        canvas.create_text(map.settings["bottom_right_corner"][0] + 120, map.settings["upper_left_corner"][1] + 90,
-                           text="coefficient de marée = {}".format(map.coefficient_maree),
-                           fill="red",
-                           font=("Helvetica", "15")
-                           )
-        map.etape = "courant"
-        popup.quit()
-        popup.destroy()
+    def get_courant(event, map: Map, canvas: Canvas):
+        """
+        Cette fonction permet de tracer un courant et fait les calculs nécessaires tout en changeant d'heure de navigation si besoin
+        """
+        if map.segments_done < len(map.path_delimitation):
+            courant = {"line_base": None, "line_end": None, "vives_eaux": None, "mortes_eaux": None, "line_id": None, "vitesse_reelle": None}
+            try:
+                if map.courants[-1]["line_end"]:  # si le dernier courant ajouté a été entièrement tracé
+                    map.courants.append(courant)  # on ajoute le courant suivant
+            except Exception:  # ça rentre dans l'exception si il n'y a pas encore de courant
+                map.courants.append(courant)  # dans ce cas on ajoute simplement le courant actuel
+            if map.is_within_bounds(event.x, event.y):
+                if not map.courants[-1]["line_base"] or map.courants[-1]["line_end"]:  # if it's our first click or a line has already been drawn
+                    map.courants[-1]["line_base"] = (event.x, event.y)  # Set the line base to the clicked coordinates
+                    map.courants[-1]["line_end"] = None  # set the line end to None because there could already be a drawn line
+                elif map.courants[-1]["line_base"] and not map.courants[-1]["line_end"]:  # else if the line base is already selected
+                    map.courants[-1]["line_end"] = (event.x, event.y)  # set the line end to the clicked cooordinates
+                    canvas.itemconfig(map.path_delimitation[map.segments_done], fill="green")
+                    map.segments_done += 1  # On incrémente le nombre de segments dont on a donné le courant de 1
+                    Popup.get_vitesse_courant(map)  # On récupère la vitesse du couarnt
+                    if map.segments_done == len(map.path_delimitation):  # Si le nombre de segments du chemin == nombre de segments dont on a donné le courant
+                        canvas.delete(map.courants[-1]["line_id"])
+                        map.calculer_courant_final(canvas)  # on calcule le courant final
+                    else:
+                        ################# Changer d'heure de navigation automatiquement si il reste des courants a tracer
+                        map.boutons_heures[map.current_button_index].configure(bg="green")  # Changer la couleur du bouton corespondant a l'heure en vert
+                        # Changer le bouton actuel de la carte a l'heure suivante pour éviter que la background ne se rechange en blanc par la fonction change_map
+                        map.current_button = map.boutons_heures[map.current_button_index + 1]
+                        map.current_button_index += 1  # On incrémente l'index du bouton actuel de 1
+                        DirectoryManager.change_map(map, canvas, map.maps_paths[map.current_button_index],
+                                                    map.current_button_index)  # On met la carte correspondant à l'heure suivante
+                        ###############################################################
 
 
-    @staticmethod
-    def get_courant(event, map, canvas):
-        courant = {"line_base": None, "line_end": None, "vives_eaux": None, "mortes_eaux": None, "line_id": None, "vitesse_reelle": None}
-        try:
-            if map.courants[-1]["line_end"]:
-                map.courants.append(courant)
-        except Exception:
-            map.courants.append(courant)
-        if map.is_within_bounds(event.x, event.y):
-            if not map.courants[-1]["line_base"] or map.courants[-1]["line_end"]:  # if it's our first click or a line has already been drawn
-                print(map.courants)
-                map.courants[-1]["line_base"] = (event.x, event.y)  # Set the line base to the clicked coordinates
-                map.courants[-1]["line_end"] = None  # set the line end to None because there could already be a drawn line
-            elif map.courants[-1]["line_base"] and not map.courants[-1]["line_end"]:  # else if the line base is already selected
-                map.courants[-1]["line_end"] = (event.x, event.y)  # set the line end to the clicked cooordinates
-                canvas.itemconfig(map.path_delimitation[map.segments_done], fill="green")
-                map.segments_done += 1
-                Mouse.get_vitesse_courant(map, canvas)
-
-
-    @staticmethod
-    def get_vitesse_courant(map, canvas):
-        popup = Tk()
-        entries = []
-        text = Label(popup, text="Veuillez entrer les vitesses du courant", font=("Helvetica", 20),
-                     foreground="red").pack(
-            side="top")
-        Label(popup, text="En vives eaux", font=("Helvetica", 10),
-              foreground="black").pack(
-            side="top")
-        entries.append(Entry(popup, width=20))
-        entries[0].pack(side="top")
-        Label(popup, text="En mortes eaux", font=("Helvetica", 10),
-              foreground="black").pack(
-            side="top")
-        entries.append(Entry(popup, width=20))
-        entries[1].pack(side="top")
-        Button(popup, command=lambda: Mouse.set_vitesse_courant(entries, popup, map, canvas), text="Confirmer").pack(
-            side="top")
-        popup.mainloop()
-
-    @staticmethod
-    def set_vitesse_courant(entries, popup, map: Map, canvas):
-        vives_eaux = map.courants[-1]["vives_eaux"] = int(entries[0].get())
-        mortes_eaux = map.courants[-1]["mortes_eaux"] = int(entries[1].get())
-        map.courants[-1]["vitesse_reelle"] = mortes_eaux + (((vives_eaux - mortes_eaux) * (map.coefficient_maree - 45)) / 50)
-        popup.quit()
-        popup.destroy()
