@@ -1,7 +1,5 @@
 {
   "pm_file": "PM_port_navalo.jpg",
-  "upper_left_corner": [245, 55],
-  "bottom_right_corner": [1560, 950],
   "longitude_top_left_corner": 190,
   "ratio_pixel_minutes": [15, 450],
   "multiplier": 103132,

@@ -32,7 +32,7 @@ class Map:
     cap = None
     waypoints = []
 
-    def load_map(self, directory: str) -> bool:
+    def load_map(self, directory: str, window: Tk) -> bool:
         """
         This function loads the map's essential variables from the chosen directory
         :param directory: path of the directory
@@ -43,10 +43,9 @@ class Map:
             with open(directory + "/settings.json") as settings_file:
                 self.settings = json.load(settings_file)
             image = Image.open(directory + "/" + self.settings["pm_file"])
-            old_width = 3087
-            old_height = 2147
             ratio = 2147/3087
-            width = 2750
+            #width = 2750
+            width = int(window.winfo_screenwidth() * 150/100)
             image = image.resize((width, int(width*ratio)), Image.ANTIALIAS)
             self.image = ImageTk.PhotoImage(image=image)
             self.image = self.image._PhotoImage__photo.subsample(2)
@@ -55,12 +54,13 @@ class Map:
             print(e)
             return False
 
-    def change_map(self, path):
+    def change_map(self, path, window):
         image = Image.open(path)
         old_width = 3087
         old_height = 2147
         ratio = 2147 / 3087
-        width = 2750
+        width = int(window.winfo_screenwidth() * 150/100)
+        #width = 2750
         image = image.resize((width, int(width * ratio)), Image.ANTIALIAS)
         self.image = ImageTk.PhotoImage(image=image)
         self.image = self.image._PhotoImage__photo.subsample(2)

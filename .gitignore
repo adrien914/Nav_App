@@ -2,3 +2,6 @@ Scripts
 Lib
 Include
 pyvenv.cfg
+build
+dist
+Window.spec
