@@ -42,7 +42,7 @@ class DirectoryManager():
             map.image_id = canvas.create_image(width/2, height/2, anchor="center", image=map.image)
             print(canvas.bbox(map.image_id))
             bbox = canvas.bbox(map.image_id)
-            map.settings["upper_left_corner"] = [bbox[0] + 28, bbox[1] + 28]
+            map.settings["upper_left_corner"] = [bbox[0] + 30, bbox[1] + 30]
             map.settings["bottom_right_corner"] = [bbox[2], bbox[3]]
             files = glob.glob(directory + "/*.jpg")
             for avant_pm in range(1, 7):
