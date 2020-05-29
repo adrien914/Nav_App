@@ -44,6 +44,7 @@ class DirectoryManager():
             bbox = canvas.bbox(map.image_id)
             map.settings["upper_left_corner"] = [bbox[0] + map.settings["decalage_x"], bbox[1] + map.settings["decalage_y"]]
             map.settings["bottom_right_corner"] = [bbox[2] - map.settings["decalage_x_bottom"], bbox[3] - map.settings["decalage_y_bottom"]]
+            map.show_instruction("Tracez la route voulue")
             files = glob.glob(directory + "/*.jpg")
             for avant_pm in range(1, 7):
                 button = Button(window, text=str(7 - avant_pm) + "h avant pleine mer",
@@ -86,5 +87,9 @@ class DirectoryManager():
             print(map.boutons_heures[button_index])
             map.current_button = map.boutons_heures[button_index]
             map.current_button_index = button_index
+            if map.etape == "tracé":
+                map.show_instruction("Tracez la route voulue")
+            elif map.etape == "courant":
+                map.show_instruction("Choisissez une heure de départ\nTracez les courants du trajet")
             for foreground_item in map.foreground_items:
                 canvas.tag_raise(foreground_item)

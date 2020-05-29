@@ -68,6 +68,7 @@ class Map:
         image = image.resize((width, int(width * ratio)), Image.ANTIALIAS)
         self.image = ImageTk.PhotoImage(image=image)
         self.image = self.image._PhotoImage__photo.subsample(2)
+
         return True
 
     def show_history(self, canvas, window):
@@ -161,12 +162,15 @@ class Map:
         distance_pixels = math.sqrt(math.pow((x1 - x), 2) + math.pow((y1 - y), 2))  # pythagore pour avoir la distance en pixels
         distance = distance_pixels * self.settings["ratio_pixel_nautical_miles"]  # Conversion de la longeur en pixels en miles nautiques
         self.distance = round(distance, 2)
-        text = canvas.create_text(self.settings["bottom_right_corner"][0] + 120,
-                           self.settings["upper_left_corner"][1] + 30,
-                           text="distance: {} miles".format(self.distance),
+        text = canvas.create_text(self.settings["bottom_right_corner"][0] + 130,
+                           self.settings["upper_left_corner"][1] + 70,
+                           text="distance:\n{} miles".format(self.distance),
                            fill="red",
-                           font=("Helvetica", "15")
+                           font=("Helvetica", "13"),
+                            anchor="center"
                            )
+        r = canvas.create_rectangle(canvas.bbox(text), fill="white")
+        canvas.tag_lower(r, text)
         self.foreground_items.append(text)
         self.travel_time = round(self.distance / self.vitesse, 2)
         cote_x = x1 - x
@@ -185,12 +189,15 @@ class Map:
                            y + self.travel_time * cote_y_split + 5,
                            fill="red"))
         print(cote_x_split, cote_y_split)
-        text = canvas.create_text(self.settings["bottom_right_corner"][0] + 120,
-                           self.settings["upper_left_corner"][1] + 60,
-                           text="temps trajet = {} heures".format(self.travel_time),
+        text = canvas.create_text(self.settings["bottom_right_corner"][0] + 130,
+                           self.settings["upper_left_corner"][1] + 100,
+                           text="temps trajet:\n{} heures".format(self.travel_time),
                            fill="red",
-                           font=("Helvetica", "15")
+                           font=("Helvetica", "13"),
+                            anchor="n"
                            )
+        r = canvas.create_rectangle(canvas.bbox(text), fill="white")
+        canvas.tag_lower(r, text)
         self.foreground_items.append(text)
 
     def calculer_courant_final(self, canvas: Canvas):
@@ -222,11 +229,14 @@ class Map:
             self.cap = int(270 + angle)
         else:
             self.cap = int(90 + angle)
-        text = canvas.create_text(self.settings["bottom_right_corner"][0] + 110, self.settings["upper_left_corner"][1] + 180,
-                                  text="cap a suivre: {}".format(self.cap),
+        text = canvas.create_text(self.settings["bottom_right_corner"][0] + 130, self.settings["upper_left_corner"][1] + 200,
+                                  text="cap a suivre:\n{}".format(self.cap),
                                   fill="red",
-                                  font=("Helvetica", "15")
+                                  font=("Helvetica", "13"),
+                                  anchor="n"
                                   )  # on l'écrit à l'écran
+        r = canvas.create_rectangle(canvas.bbox(text), fill="white")
+        canvas.tag_lower(r, text)
         self.foreground_items.append(text)
         self.calculer_route_fond(canvas)
 
@@ -251,12 +261,15 @@ class Map:
     def write_waypoints(self, canvas):
         i = 0
         for waypoint in self.waypoints:
-            text = canvas.create_text(self.settings["bottom_right_corner"][0] + 110,
-                                      self.settings["upper_left_corner"][1] + 240 + i * 55,
+            text = canvas.create_text(self.settings["bottom_right_corner"][0] + 130,
+                                      self.settings["upper_left_corner"][1] + 250 + i * 55,
                                       text="Waypoint {}: \n{}".format(i + 1, waypoint),
                                       fill="red",
-                                      font=("Helvetica", "15")
+                                      font=("Helvetica", "13"),
+                                      anchor="n"
                                       )  # on l'écrit à l'écran
+            r = canvas.create_rectangle(canvas.bbox(text), fill="white")
+            canvas.tag_lower(r, text)
             self.foreground_items.append(text)
             i += 1
 
@@ -268,12 +281,14 @@ class Map:
     def show_instruction(self, text):
         if self.instruction:
             self.canvas.delete(self.instruction)
-        self.instruction = self.canvas.create_text(self.settings["upper_left_corner"][0] - 150,
+        text = self.instruction = self.canvas.create_text(self.settings["upper_left_corner"][0] - 150,
                                                  self.settings["upper_left_corner"][1] + 30,
                                                  text=text,
                                                  fill="red",
                                                  font=("Helvetica", "13")
                                                  )
+        r = self.canvas.create_rectangle(self.canvas.bbox(text), fill="white")
+        self.canvas.tag_lower(r, text)
 
     def reset(self):
         self.directory = None

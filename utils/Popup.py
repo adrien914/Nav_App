@@ -49,11 +49,14 @@ class Popup:
     def get_speed_value(input: Entry, popup: Tk, map: Map, canvas: Canvas):
         value = input.get()  # on récupère la valeur de l'input
         map.vitesse = int(value)  # on l'assigne a la vitesse du bateau
-        text = canvas.create_text(map.settings["bottom_right_corner"][0] + 110, map.settings["upper_left_corner"][1],
-                                  text="speed = {} knots".format(map.vitesse),
+        text = canvas.create_text(map.settings["bottom_right_corner"][0] + 130, map.settings["upper_left_corner"][1],
+                                  text="vitesse:\n{} noeuds".format(map.vitesse),
                                   fill="red",
-                                  font=("Helvetica", "15")
+                                  font=("Helvetica", "13"),
+                                  anchor="n"
                                   )  # on l'écrit à l'écran
+        r = canvas.create_rectangle(canvas.bbox(text), fill="white")
+        canvas.tag_lower(r, text)
         map.foreground_items.append(text)
         popup.quit()
         popup.destroy()
@@ -62,14 +65,18 @@ class Popup:
     def get_coeff_maree_value(input: Entry, popup: Tk, map: Map, canvas: Canvas):
         value = input.get()  # on récupère la valeur de l'input
         map.coefficient_maree = int(value)  # On en tire la coefficient de marée en tant qu'entier
-        text = canvas.create_text(map.settings["bottom_right_corner"][0] + 120,
-                                  map.settings["upper_left_corner"][1] + 90,
-                                  text="coefficient de marée = {}".format(map.coefficient_maree),
+        text = canvas.create_text(map.settings["bottom_right_corner"][0] + 130,
+                                  map.settings["upper_left_corner"][1] + 150,
+                                  text="coefficient de marée:\n{}".format(map.coefficient_maree),
                                   fill="red",
-                                  font=("Helvetica", "15")
+                                  font=("Helvetica", "13"),
+                                  anchor="n",
                                   )  # on écrit le coefficient de marée à l'écran
+        r = canvas.create_rectangle(canvas.bbox(text), fill="white")
+        canvas.tag_lower(r, text)
         map.foreground_items.append(text)
         map.etape = "courant"  # On change l'étape au tracé des courants
+        map.show_instruction("Choisissez une heure de départ\nTracez les courants du trajet")
         canvas.delete(map.longitude_text)
         canvas.delete(map.latitude_text)
         popup.quit()
@@ -243,9 +250,7 @@ class Popup:
         latitude_ref_pixels = math.log(math.tan((math.pi / 4) + val_latitude_ref_radian / 2) ) * map.settings["multiplier"]
         map.settings["nombre_pixels_equateur_latitude_de_reference"] = latitude_ref_pixels
         map.show_instruction("Veuillez tracer le décalage\n par rapport au \ncoin supérieur haut-gauche")
-        print("changing sous etape")
         map.sous_etape = "decalage_x_y"
-        print(map.sous_etape)
         popup.quit()
         popup.destroy()
 
