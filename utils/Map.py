@@ -3,10 +3,12 @@ from PIL import Image, ImageTk
 import json
 import math
 
+
 class Map:
     directory = None
     settings = {}
     image = None
+    canvas = None
     line_base = None
     line_end = None
     last_line_id = None
@@ -19,6 +21,7 @@ class Map:
     coefficient_maree = None
     history_buttons = []
     etape = "tracé"
+    sous_etape = "longitude_top_left_corner"
     path_delimitation = []
     courants = []
     segments_done = 0
@@ -31,7 +34,8 @@ class Map:
     ligne_cap = None
     cap = None
     waypoints = []
-
+    ligne_decalage_ids = []
+    instruction = None
     def load_map(self, directory: str, window: Tk) -> bool:
         """
         This function loads the map's essential variables from the chosen directory
@@ -130,6 +134,7 @@ class Map:
         y = abs(y - self.settings["upper_left_corner"][1])
         position_y = self.settings["nombre_pixels_equateur_latitude_de_reference"] - y + self.settings[
             "decalage_pixels_latitude"]
+        # multiplier = nombre de pixels / nombre de minutes de latitude
         latitude = math.degrees(2 * math.atan(math.exp(position_y / self.settings["multiplier"])) - math.pi / 2)
         minutes_latitude = int((latitude - int(latitude)) * 60)
         latitude = str(int(latitude)) + "." + str(minutes_latitude)
@@ -254,6 +259,21 @@ class Map:
                                       )  # on l'écrit à l'écran
             self.foreground_items.append(text)
             i += 1
+
+    def calibrer(self):
+        from utils.Popup import Popup
+        self.etape = "calibrage"
+        Popup.ask_longitude_top_left_corner(self)
+
+    def show_instruction(self, text):
+        if self.instruction:
+            self.canvas.delete(self.instruction)
+        self.instruction = self.canvas.create_text(self.settings["upper_left_corner"][0] - 150,
+                                                 self.settings["upper_left_corner"][1] + 30,
+                                                 text=text,
+                                                 fill="red",
+                                                 font=("Helvetica", "13")
+                                                 )
 
     def reset(self):
         self.directory = None

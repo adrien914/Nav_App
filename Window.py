@@ -28,10 +28,12 @@ window = Tk()
 window.attributes('-fullscreen', True)
 
 map = Map()
+
 ############ Buttons frame ##############
 button_frame = Frame(window)
 button_frame.pack(side="top")
 directory_button = Button(button_frame, command=lambda: DirectoryManager.get_directory(map, canvas, window), text="Choisir zone de navigation").pack(side="left")
+calibrer_button = Button(button_frame, command=lambda: map.calibrer(), text="Calibrer carte").pack(side="left")
 exit_button = Button(button_frame, command=lambda: sys.exit(0), text="Exit").pack(side="left")
 
 #########################################

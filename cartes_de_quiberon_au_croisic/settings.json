@@ -2,11 +2,11 @@
   "pm_file": "PM_port_navalo.jpg",
   "longitude_top_left_corner": 190,
   "ratio_pixel_minutes": [15, 450],
+  "multiplier": 103132,
   "decalage_x": 30,
   "decalage_y": 30,
   "decalage_x_bottom": 30,
   "decalage_y_bottom": 30,
-  "multiplier": 103132,
   "ratio_pixel_nautical_miles": 0.02252252252252252,
   "nombre_pixels_equateur_latitude_de_reference": 97629,
   "decalage_pixels_latitude": 30

@@ -35,12 +35,12 @@ class DirectoryManager():
                 map.reset()
             DirectoryManager.write_history(directory)
             map.load_map(directory, window)
+            map.canvas = canvas
             width = canvas.winfo_width()
             height = canvas.winfo_height()
             if map.image_id:
                 canvas.delete(map.image_id)
             map.image_id = canvas.create_image(width/2, height/2, anchor="center", image=map.image)
-            print(canvas.bbox(map.image_id))
             bbox = canvas.bbox(map.image_id)
             map.settings["upper_left_corner"] = [bbox[0] + map.settings["decalage_x"], bbox[1] + map.settings["decalage_y"]]
             map.settings["bottom_right_corner"] = [bbox[2] - map.settings["decalage_x_bottom"], bbox[3] - map.settings["decalage_y_bottom"]]

@@ -1,6 +1,8 @@
 from tkinter import Tk, Button, Entry, Label, Canvas
 from utils.Map import Map
 import json
+import math
+
 
 class Popup:
     @staticmethod
@@ -119,7 +121,6 @@ class Popup:
 
     @staticmethod
     def change_name(input, popup, path, map: Map, canvas, window):
-        print(map)
         value = input.get()
         found = False
         i = 0
@@ -139,3 +140,113 @@ class Popup:
             Map.show_history(map, canvas, window)
         popup.quit()
         popup.destroy()
+
+    @staticmethod
+    def ask_longitude_top_left_corner(map):
+        popup = Tk()
+        text = Label(popup, text="Entrez la longitude de référence en haut a gauche de la carte", font=("Helvetica", 20),
+                     foreground="red").pack(
+            side="top")
+        entry = Entry(popup, width=20)
+        entry.pack(side="top")
+        Button(popup, command=lambda: Popup.set_longitude_top_left_corner(entry, popup, map),
+               text="Confirmer").pack(side="top")
+        popup.bind('<Return>', lambda event: Popup.set_longitude_top_left_corner(entry, popup, map))
+        entry.focus_force()  # Forcer le focus sur l'input pour ne pas avoir a cliquer dessus
+        Popup.center(popup)  # Center the popup
+        popup.mainloop()
+
+    @staticmethod
+    def set_longitude_top_left_corner(entry, popup, map):
+        value = str(entry.get())
+        try:
+            degres = int(value.split(",")[0]) * 60
+            minutes = int(value.split(",")[1])
+        except:
+            degres = int(value.split(".")[0]) * 60
+            minutes = int(value.split(".")[1])
+        map.settings["longitude_top_left_corner"] = degres + minutes
+        map.sous_etape = "ratio_pixel_minutes"
+        map.show_instruction("Veuillez tracer une ligne\n correspondant a \nun nombre entier de\n minutes de longitude")
+        popup.quit()
+        popup.destroy()
+
+    @staticmethod
+    def ask_number_of_minutes_popup(map):
+        popup = Tk()
+        text = Label(popup, text="Entrez le nombre de minutes correspondant a la ligne tracée", font=("Helvetica", 20), foreground="red").pack(
+            side="top")
+        entry = Entry(popup, width=20)
+        entry.pack(side="top")
+        if map.sous_etape == "ratio_pixel_minutes":
+            print(map.sous_etape)
+
+            Button(popup, command=lambda: Popup.calculate_pixel_minutes_ratio(entry, popup, map),
+                   text="Confirmer").pack(side="top")
+            popup.bind('<Return>', lambda event: Popup.calculate_pixel_minutes_ratio(entry, popup, map))  # Assigner la touché Entrée a la meme fonction que le bouton confirmer
+        elif map.sous_etape == "ratio_pixel_nautical_miles":
+            print(map.sous_etape)
+            Button(popup, command=lambda: Popup.calculate_ratio_pixel_nautical_miles(entry, popup, map),
+                   text="Confirmer").pack(side="top")
+            popup.bind('<Return>', lambda event: Popup.calculate_ratio_pixel_nautical_miles(entry, popup,
+                                                                                     map))  # Assigner la touché Entrée a la meme fonction que le bouton confirmer
+        entry.focus_force()  # Forcer le focus sur l'input pour ne pas avoir a cliquer dessus
+        Popup.center(popup)  # Center the popup
+        popup.mainloop()
+
+    @staticmethod
+    def calculate_pixel_minutes_ratio(entry, popup, map: Map):
+        # Nombre de pixels correspondant a une minute en longitude
+        value = int(entry.get())
+        longueur_ligne = map.line_end[0] - map.line_base[0]
+        map.settings["ratio_pixel_minutes"] = [value, longueur_ligne]
+        radian = math.radians(value / 60)  # On calcule ne nombre de degrés en radian
+        map.settings["multiplier"] = longueur_ligne / radian  # = nombre de pixels par nombre de minutes de longitude
+        map.show_instruction("Veuillez tracer une ligne\n correspondant a \nun nombre entier de\n minutes de latitude")
+        map.sous_etape = "ratio_pixel_nautical_miles"
+        popup.quit()
+        popup.destroy()
+
+    @staticmethod
+    def calculate_ratio_pixel_nautical_miles(entry, popup, map):
+        # nombre de pixels correspondant a 1 mile en latitude
+        value = int(entry.get())
+        longueur_ligne = map.line_end[1] - map.line_base[1]
+        map.settings["ratio_pixel_nautical_miles"] = value / longueur_ligne
+        popup.quit()
+        popup.destroy()
+        Popup.ask_latitude_de_reference(map)
+
+    @staticmethod
+    def ask_latitude_de_reference(map):
+        popup = Tk()
+        text = Label(popup, text="Entrez la latitude de référence", font=("Helvetica", 20),
+                     foreground="red").pack(
+            side="top")
+        entry = Entry(popup, width=20)
+        entry.pack(side="top")
+        Button(popup, command=lambda: Popup.calculate_latitude_de_reference(entry, popup, map),
+               text="Confirmer").pack(side="top")
+        popup.bind('<Return>', lambda event: Popup.calculate_latitude_de_reference(entry, popup, map))
+        entry.focus_force()  # Forcer le focus sur l'input pour ne pas avoir a cliquer dessus
+        Popup.center(popup)  # Center the popup
+        popup.mainloop()
+
+    @staticmethod
+    def calculate_latitude_de_reference(entry, popup, map: Map):
+        value = str(entry.get())
+        degres = int(value.split(",")[0])
+        degres = math.radians(degres)
+        minutes = int(value.split(",")[1])
+        minutes = math.radians(minutes / 60)
+        val_latitude_ref_radian = degres + minutes
+        latitude_ref_pixels = math.log(math.tan((math.pi / 4) + val_latitude_ref_radian / 2) ) * map.settings["multiplier"]
+        map.settings["nombre_pixels_equateur_latitude_de_reference"] = latitude_ref_pixels
+        map.show_instruction("Veuillez tracer le décalage\n par rapport au \ncoin supérieur haut-gauche")
+        print("changing sous etape")
+        map.sous_etape = "decalage_x_y"
+        print(map.sous_etape)
+        popup.quit()
+        popup.destroy()
+
+

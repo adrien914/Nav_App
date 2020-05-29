@@ -19,15 +19,59 @@ class Mouse():
         """
         if map.etape == "tracé":
             if map.is_within_bounds(event.x, event.y):
-                if not map.line_base or map.line_end:  # if it's our first click or a line has already been drawn
-                    map.line_base = (event.x, event.y)  # Set the line base to the clicked coordinates
-                    map.line_end = None  # set the line end to None because there could already be a drawn line
-                elif map.line_base and not map.line_end:  # else if the line base is already selected
-                    map.line_end = (event.x, event.y)  # set the line end to the clicked cooordinates
-                    Popup.get_boat_speed(map, canvas)
-                    map.show_speed_distance(canvas)
+                Mouse.trace_ligne(map, event, canvas)
+        elif map.etape == "calibrage":
+            if map.sous_etape == "ratio_pixel_minutes":
+                Mouse.trace_ligne(map, event, canvas)
+            elif map.sous_etape == "ratio_pixel_nautical_miles":
+                Mouse.trace_ligne(map, event, canvas)
+            elif map.sous_etape == "decalage_x_y":
+                Mouse.calculer_decalage(event, map, canvas)
+            elif map.sous_etape == "decalage_pixels_latitude":
+                Mouse.calculer_decalage_latitude(event, map, canvas)
         else:
             Mouse.get_courant(event, map, canvas, window)
+
+    @staticmethod
+    def trace_ligne(map: Map, event, canvas: Canvas):
+        if not map.line_base or map.line_end:  # if it's our first click or a line has already been drawn
+            map.line_base = (event.x, event.y)  # Set the line base to the clicked coordinates
+            map.line_end = None  # set the line end to None because there could already be a drawn line
+        elif map.line_base and not map.line_end:  # else if the line base is already selected
+            map.line_end = (event.x, event.y)  # set the line end to the clicked cooordinates
+            if map.etape == "tracé":
+                Popup.get_boat_speed(map, canvas)
+                map.show_speed_distance(canvas)
+            elif map.etape == "calibrage":
+                if map.sous_etape == "ratio_pixel_minutes":
+                    Popup.ask_number_of_minutes_popup(map)
+                    if map.last_line_id:
+                        canvas.delete(map.last_line_id)
+                elif map.sous_etape == "ratio_pixel_nautical_miles":
+                    print("line_id", map.last_line_id)
+                    if map.last_line_id:
+                        canvas.delete(map.last_line_id)
+                    Popup.ask_number_of_minutes_popup(map)
+
+    @staticmethod
+    def calculer_decalage(event, map: Map, canvas: Canvas):
+        x, y, _, _ = canvas.bbox(map.image_id)
+        map.settings["decalage_x"] = event.x - x
+        map.settings["decalage_y"] = event.y - y
+        map.settings["decalage_x_bottom"] = event.x - x
+        map.settings["decalage_y_bottom"] = event.y - y
+        map.sous_etape = "decalage_pixels_latitude"
+        map.show_instruction("Veuillez tracer le décalage\n de latitude (coin supérieur droit)")
+        for line in map.ligne_decalage_ids:
+            canvas.delete(line)
+
+    @staticmethod
+    def calculer_decalage_latitude(event, map: Map, canvas: Canvas):
+        x, y, _, _ = canvas.bbox(map.image_id)
+        map.settings["decalage_pixels_latitude"] = event.y - y
+        if map.last_line_id:
+            canvas.delete(map.last_line_id)
+        map.etape = "tracé"
 
     @staticmethod
     def mouse_moved(event, map, canvas) -> None:
@@ -40,28 +84,15 @@ class Mouse():
         :return: None
         """
         if map.etape == "tracé":
-            if map.image and map.is_within_bounds(event.x, event.y):
-                if map.longitude_text and map.latitude_text:  # if there was already a text for the position delete it so we can redraw it
-                    canvas.delete(map.longitude_text)
-                    canvas.delete(map.latitude_text)
-                if map.line_base and not map.line_end:  # if the user started drawing a line
-                    x1, y1 = map.line_base  # assign the position of the beggining of the line to x1 and y1
-                    if map.last_line_id:  # if there's already a line delete it so we can redraw it
-                        canvas.delete(map.last_line_id)
-                    map.last_line_id = canvas.create_line(x1, y1, event.x, event.y, width=2, fill="red", arrow="last", arrowshape=(8, 10, 7))  # draw the line
-
-                ################ Calcul de la longitude ################
-                longitude = map.get_longitude(event.x)
-                ########################################################
-
-                ################ Calcul de la latitude #################
-                latitude = map.get_latitude(event.y)
-                ########################################################
-                map.write_coordinates(canvas, event, longitude, latitude)
-            elif map.image and not map.is_within_bounds(event.x, event.y):
-                if map.longitude_text and map.latitude_text:
-                    canvas.delete(map.longitude_text)
-                    canvas.delete(map.latitude_text)
+            Mouse.show_trace(map, event, canvas)
+        elif map.etape == "calibrage":
+            if map.sous_etape == "ratio_pixel_minutes" or "ratio_pixel_nautical_miles":
+                Mouse.show_trace_ratio_pixel_minutes(map, event, canvas)
+            if map.sous_etape == "decalage_x_y":
+                Mouse.show_trace_decalage_x_y(map, event, canvas)
+            if map.sous_etape == "decalage_pixels_latitude":
+                print("test")
+                Mouse.show_trace_decalage_pixels_latitude(map, event, canvas)
         else:
             if map.image and map.is_within_bounds(event.x, event.y):
                 try:
@@ -72,6 +103,71 @@ class Mouse():
                         map.courants[-1]["line_id"] = canvas.create_line(x1, y1, event.x, event.y, width=2, fill="red", arrow="last", arrowshape=(8, 10, 7))  # draw the line
                 except:
                     pass
+
+    @staticmethod
+    def show_trace(map, event, canvas):
+        if map.image and map.is_within_bounds(event.x, event.y):
+            if map.longitude_text and map.latitude_text:  # if there was already a text for the position delete it so we can redraw it
+                canvas.delete(map.longitude_text)
+                canvas.delete(map.latitude_text)
+            if map.line_base and not map.line_end:  # if the user started drawing a line
+                x1, y1 = map.line_base  # assign the position of the beggining of the line to x1 and y1
+                if map.last_line_id:  # if there's already a line delete it so we can redraw it
+                    canvas.delete(map.last_line_id)
+                map.last_line_id = canvas.create_line(x1, y1, event.x, event.y, width=2, fill="red", arrow="last",
+                                                      arrowshape=(8, 10, 7))  # draw the line
+
+            ################ Calcul de la longitude ################
+            longitude = map.get_longitude(event.x)
+            ########################################################
+
+            ################ Calcul de la latitude #################
+            latitude = map.get_latitude(event.y)
+            ########################################################
+            map.write_coordinates(canvas, event, longitude, latitude)
+        elif map.image and not map.is_within_bounds(event.x, event.y):
+            if map.longitude_text and map.latitude_text:
+                canvas.delete(map.longitude_text)
+                canvas.delete(map.latitude_text)
+
+    @staticmethod
+    def show_trace_ratio_pixel_minutes(map, event, canvas):
+        if map.image and map.is_within_bounds(event.x, event.y):
+            if map.longitude_text and map.latitude_text:  # if there was already a text for the position delete it so we can redraw it
+                canvas.delete(map.longitude_text)
+                canvas.delete(map.latitude_text)
+            if map.line_base and not map.line_end:  # if the user started drawing a line
+                x1, y1 = map.line_base  # assign the position of the beggining of the line to x1 and y1
+                if map.last_line_id:  # if there's already a line delete it so we can redraw it
+                    canvas.delete(map.last_line_id)
+                map.last_line_id = canvas.create_line(x1, y1, event.x, event.y, width=2, fill="red", arrow="last",
+                                                      arrowshape=(8, 10, 7))  # draw the line
+
+    @staticmethod
+    def show_trace_decalage_x_y(map: Map, event, canvas: Canvas):
+        x, y, _, _ = canvas.bbox(map.image_id)
+        if map.image:
+            if map.longitude_text and map.latitude_text:  # if there was already a text for the position delete it so we can redraw it
+                canvas.delete(map.longitude_text)
+                canvas.delete(map.latitude_text)
+            vertical_line = canvas.create_line(event.x, y, event.x, event.y, fill="red")
+            horizontal_line = canvas.create_line(x, event.y, event.x, event.y, fill="red")
+            for line in map.ligne_decalage_ids:
+                canvas.delete(line)
+            map.ligne_decalage_ids = [vertical_line, horizontal_line]
+
+    @staticmethod
+    def show_trace_decalage_pixels_latitude(map: Map, event, canvas: Canvas):
+        _, y, x, _ = canvas.bbox(map.image_id)
+        x -= map.settings["decalage_x_bottom"]
+        y += map.settings["decalage_y"]
+        if map.image:
+            if map.longitude_text and map.latitude_text:  # if there was already a text for the position delete it so we can redraw it
+                canvas.delete(map.longitude_text)
+                canvas.delete(map.latitude_text)
+            if map.last_line_id:
+                canvas.delete(map.last_line_id)
+            map.last_line_id = canvas.create_line(x, y, x, event.y, width=1, fill="red", arrow="last", arrowshape=(8, 10, 7))
 
     @staticmethod
     def get_courant(event, map: Map, canvas: Canvas, window):
