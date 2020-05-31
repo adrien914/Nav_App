@@ -258,7 +258,7 @@ class Map:
         bbox = self.canvas.winfo_width()
         print(bbox)
         image_bbox = self.canvas.bbox(self.image_id)
-        label = Label(self.window, text=text, font=("Helvetica", 13), wraplength=bbox - image_bbox[0] - 20,
+        label = Label(self.window, text=text, font=("Helvetica", 13), wraplength=bbox - image_bbox[2] - 20,
                       foreground="red")
         print(self.foreground_items)
         try:
