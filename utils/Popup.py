@@ -49,15 +49,7 @@ class Popup:
     def get_speed_value(input: Entry, popup: Tk, map: Map, canvas: Canvas):
         value = input.get()  # on récupère la valeur de l'input
         map.vitesse = int(value)  # on l'assigne a la vitesse du bateau
-        text = canvas.create_text(map.settings["bottom_right_corner"][0] + 130, map.settings["upper_left_corner"][1],
-                                  text="vitesse:\n{} noeuds".format(map.vitesse),
-                                  fill="red",
-                                  font=("Helvetica", "13"),
-                                  anchor="n"
-                                  )  # on l'écrit à l'écran
-        r = canvas.create_rectangle(canvas.bbox(text), fill="white")
-        canvas.tag_lower(r, text)
-        map.foreground_items.append(text)
+        map.show_info("vitesse: {} noeuds".format(map.vitesse))
         popup.quit()
         popup.destroy()
 
@@ -65,18 +57,9 @@ class Popup:
     def get_coeff_maree_value(input: Entry, popup: Tk, map: Map, canvas: Canvas):
         value = input.get()  # on récupère la valeur de l'input
         map.coefficient_maree = int(value)  # On en tire la coefficient de marée en tant qu'entier
-        text = canvas.create_text(map.settings["bottom_right_corner"][0] + 130,
-                                  map.settings["upper_left_corner"][1] + 150,
-                                  text="coefficient de marée:\n{}".format(map.coefficient_maree),
-                                  fill="red",
-                                  font=("Helvetica", "13"),
-                                  anchor="n",
-                                  )  # on écrit le coefficient de marée à l'écran
-        r = canvas.create_rectangle(canvas.bbox(text), fill="white")
-        canvas.tag_lower(r, text)
-        map.foreground_items.append(text)
+        map.show_info("coefficient de marée: {}".format(map.coefficient_maree))
         map.etape = "courant"  # On change l'étape au tracé des courants
-        map.show_instruction("Choisissez une heure de départ\nTracez les courants du trajet")
+        map.show_instruction("Choisissez une heure de départ et tracez les courants du trajet")
         canvas.delete(map.longitude_text)
         canvas.delete(map.latitude_text)
         popup.quit()
@@ -174,7 +157,7 @@ class Popup:
             minutes = int(value.split(".")[1])
         map.settings["longitude_top_left_corner"] = degres + minutes
         map.sous_etape = "ratio_pixel_minutes"
-        map.show_instruction("Veuillez tracer une ligne\n correspondant a \nun nombre entier de\n minutes de longitude")
+        map.show_instruction("Veuillez tracer une ligne correspondant a un nombre entier de minutes de longitude")
         popup.quit()
         popup.destroy()
 
@@ -242,14 +225,20 @@ class Popup:
     @staticmethod
     def calculate_latitude_de_reference(entry, popup, map: Map):
         value = str(entry.get())
-        degres = int(value.split(",")[0])
+        try:
+            degres = int(value.split(",")[0])
+            minutes = int(value.split(",")[1])
+        except:
+            degres = int(value.split(".")[0])
+            minutes = int(value.split(".")[1])
+        # degres = int(value.split(",")[0])
         degres = math.radians(degres)
-        minutes = int(value.split(",")[1])
+        # minutes = int(value.split(",")[1])
         minutes = math.radians(minutes / 60)
         val_latitude_ref_radian = degres + minutes
         latitude_ref_pixels = math.log(math.tan((math.pi / 4) + val_latitude_ref_radian / 2) ) * map.settings["multiplier"]
         map.settings["nombre_pixels_equateur_latitude_de_reference"] = latitude_ref_pixels
-        map.show_instruction("Veuillez tracer le décalage\n par rapport au \ncoin supérieur haut-gauche")
+        map.show_instruction("Veuillez tracer le décalage par rapport au coin supérieur haut-gauche")
         map.sous_etape = "decalage_x_y"
         popup.quit()
         popup.destroy()

@@ -61,7 +61,7 @@ class Mouse():
         map.settings["decalage_x_bottom"] = event.x - x
         map.settings["decalage_y_bottom"] = event.y - y
         map.sous_etape = "decalage_pixels_latitude"
-        map.show_instruction("Veuillez tracer le décalage\n de latitude (coin supérieur droit)")
+        map.show_instruction("Veuillez tracer le décalage de latitude (coin supérieur droit)")
         for line in map.ligne_decalage_ids:
             canvas.delete(line)
 
@@ -71,7 +71,9 @@ class Mouse():
         map.settings["decalage_pixels_latitude"] = event.y - y
         if map.last_line_id:
             canvas.delete(map.last_line_id)
+        map.save_settings()
         map.etape = "tracé"
+        map.show_instruction("Tracez la route voulue")
 
     @staticmethod
     def mouse_moved(event, map, canvas) -> None:
@@ -91,7 +93,6 @@ class Mouse():
             if map.sous_etape == "decalage_x_y":
                 Mouse.show_trace_decalage_x_y(map, event, canvas)
             if map.sous_etape == "decalage_pixels_latitude":
-                print("test")
                 Mouse.show_trace_decalage_pixels_latitude(map, event, canvas)
         else:
             if map.image and map.is_within_bounds(event.x, event.y):

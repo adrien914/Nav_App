@@ -90,6 +90,6 @@ class DirectoryManager():
             if map.etape == "tracé":
                 map.show_instruction("Tracez la route voulue")
             elif map.etape == "courant":
-                map.show_instruction("Choisissez une heure de départ\nTracez les courants du trajet")
+                map.show_instruction("Choisissez une heure de départ et tracez les courants du trajet")
             for foreground_item in map.foreground_items:
                 canvas.tag_raise(foreground_item)

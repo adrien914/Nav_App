@@ -28,6 +28,7 @@ window = Tk()
 window.attributes('-fullscreen', True)
 
 map = Map()
+map.window = window
 
 ############ Buttons frame ##############
 button_frame = Frame(window)

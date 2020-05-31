@@ -1,13 +1,1 @@
-{
-  "pm_file": "PM_port_navalo.jpg",
-  "longitude_top_left_corner": 190,
-  "ratio_pixel_minutes": [15, 450],
-  "multiplier": 103132,
-  "decalage_x": 30,
-  "decalage_y": 30,
-  "decalage_x_bottom": 30,
-  "decalage_y_bottom": 30,
-  "ratio_pixel_nautical_miles": 0.02252252252252252,
-  "nombre_pixels_equateur_latitude_de_reference": 97629,
-  "decalage_pixels_latitude": 30
-}
+{"pm_file": "PM_port_navalo.jpg", "longitude_top_left_corner": 190, "ratio_pixel_minutes": [15, 475], "multiplier": 108861.9810748564, "decalage_x": 25, "decalage_y": 25, "decalage_x_bottom": 25, "decalage_y_bottom": 25, "ratio_pixel_nautical_miles": 0.02145922746781116, "nombre_pixels_equateur_latitude_de_reference": 103053.35434595133, "decalage_pixels_latitude": 63, "upper_left_corner": [270, 56], "bottom_right_corner": [1650, 998]}
